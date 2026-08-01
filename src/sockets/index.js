@@ -7,6 +7,7 @@ import typing from './handlers/typing.js';
 import disconnectHandler from './handlers/disconnect.js';
 import reactToMessage from './handlers/reactToMessage.js';
 import terminateRoom from './handlers/terminateRoom.js';
+import markSeen from './handlers/markSeen.js';
 
 export const initSocket = (server) => {
   const io = new Server(server, {
@@ -22,6 +23,7 @@ export const initSocket = (server) => {
     disconnectHandler(io, socket);
     reactToMessage(io, socket);
     terminateRoom(io, socket);
+    markSeen(io, socket);
   });
 
   return io;
