@@ -1,0 +1,6 @@
+echo "node_modules
+.env" > .gitignore
+
+node_modules
+.env
+*.log
