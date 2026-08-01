@@ -4,13 +4,12 @@ import Room from '../models/Room.js';
 import generateRoomCode from '../utils/generateRoomCode.js';
 import { createRoomLimiter } from '../middleware/rateLimiter.js';
 
-
 const router = express.Router();
 
-const ROOM_DURATION_MS = 3 * 60 * 60 * 1000; // 3 hours
+const ROOM_DURATION_MS = 1 * 60 * 60 * 1000; // 1 hour
 
 // POST /api/rooms  — create a new room
-router.post('/', async (req, res) => {
+router.post('/', createRoomLimiter, async (req, res) => {
   try {
     const code = generateRoomCode();
     const expiresAt = new Date(Date.now() + ROOM_DURATION_MS);
