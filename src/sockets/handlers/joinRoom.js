@@ -12,15 +12,22 @@ const joinRoom = (io, socket) => {
         return callback({ error: 'Room not found or expired' });
       }
 
-      // assign this socket an alias for this session
       const alias = generateAlias();
       socket.data.alias = alias;
       socket.data.roomCode = code;
 
-      socket.join(code); // Socket.io's built-in room grouping
+      socket.join(code);
 
-      // load existing messages so the joining user sees chat history
-      const messages = await Message.find({ roomId: room._id }).sort({ createdAt: 1 });
+      const rawMessages = await Message.find({ roomId: room._id }).sort({ createdAt: 1 });
+      const messages = rawMessages.map((m) => ({
+        id: m._id.toString(),
+        alias: m.alias,
+        content: m.content,
+        fileName: m.fileName,
+        type: m.type,
+        reactions: m.reactions,
+        createdAt: m.createdAt,
+      }));
 
       callback({
         alias,
@@ -28,7 +35,6 @@ const joinRoom = (io, socket) => {
         messages,
       });
 
-      // tell everyone else in the room someone joined
       socket.to(code).emit('userJoined', { alias });
     } catch (error) {
       callback({ error: 'Something went wrong joining the room' });

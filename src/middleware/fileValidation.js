@@ -1,9 +1,19 @@
 // src/middleware/fileValidation.js
-const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
-const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
+const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 
-export const validateBase64File = (base64String) => {
-  // expects format like: data:image/png;base64,iVBORw0KGgo...
+const ALLOWED_FILE_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+  'text/plain',
+  'application/zip',
+];
+
+const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB — same limit for both images and files
+
+export const validateBase64File = (base64String, expectedCategory) => {
   const match = base64String.match(/^data:([a-zA-Z0-9/+.-]+);base64,(.+)$/);
 
   if (!match) {
@@ -13,11 +23,12 @@ export const validateBase64File = (base64String) => {
   const mimeType = match[1];
   const base64Data = match[2];
 
-  if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
+  const allowedList = expectedCategory === 'image' ? ALLOWED_IMAGE_TYPES : ALLOWED_FILE_TYPES;
+
+  if (!allowedList.includes(mimeType)) {
     return { valid: false, error: 'File type not allowed' };
   }
 
-  // base64 encoding inflates size by ~33% — approximate the real byte size
   const sizeInBytes = (base64Data.length * 3) / 4;
 
   if (sizeInBytes > MAX_FILE_SIZE_BYTES) {

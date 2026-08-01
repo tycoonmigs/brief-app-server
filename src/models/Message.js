@@ -12,13 +12,22 @@ const messageSchema = new mongoose.Schema({
     required: true,
   },
   content: {
-    type: String, // text content, or base64 data for small files/images (v1)
+    type: String,
+  },
+  fileName: {
+    type: String, // only used for type: 'file' — original filename for display
   },
   type: {
     type: String,
     enum: ['text', 'image', 'file'],
     default: 'text',
   },
+  reactions: [
+    {
+      alias: { type: String, required: true },
+      emoji: { type: String, required: true },
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,
@@ -29,12 +38,7 @@ const messageSchema = new mongoose.Schema({
   },
 });
 
-// Same TTL pattern as Room — each message deletes itself
-// independently once its own expiresAt passes.
 messageSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-
-// Speeds up "get all messages for this room" queries, which
-// we'll run constantly (every time someone joins/loads a room).
 messageSchema.index({ roomId: 1 });
 
 const Message = mongoose.model('Message', messageSchema);
