@@ -2,6 +2,7 @@
 import Room from '../../models/Room.js';
 import Message from '../../models/Message.js';
 import generateAlias from '../../utils/generateAlias.js';
+import { canJoinRoom, addOccupant } from '../roomOccupancy.js';
 
 const joinRoom = (io, socket) => {
   socket.on('joinRoom', async ({ code }, callback) => {
@@ -12,11 +13,16 @@ const joinRoom = (io, socket) => {
         return callback({ error: 'Room not found or expired' });
       }
 
+      if (!canJoinRoom(code)) {
+        return callback({ error: 'This room already has 2 people in it.' });
+      }
+
       const alias = generateAlias();
       socket.data.alias = alias;
       socket.data.roomCode = code;
 
       socket.join(code);
+      addOccupant(code, socket.id);
 
       const rawMessages = await Message.find({ roomId: room._id }).sort({ createdAt: 1 });
       const messages = rawMessages.map((m) => ({
