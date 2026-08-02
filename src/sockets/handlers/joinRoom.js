@@ -14,7 +14,10 @@ const joinRoom = (io, socket) => {
       }
 
       if (!canJoinRoom(code)) {
-        return callback({ error: 'This room already has 2 people in it.' });
+        return callback({
+          error: 'room-full',
+          message: 'This is a private 2-person room, and it already has 2 people chatting.',
+        });
       }
 
       const alias = generateAlias();
